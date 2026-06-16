@@ -36,9 +36,11 @@ const VisitorRegistry = ({ showToast }) => {
 
     // WhatsApp Integration
     const stallName = currentStall.stallName || 'our stall';
-    const instagramId = currentStall.instagramId ? `@${currentStall.instagramId.replace('@', '')}` : '';
-    const instaLink = instagramId ? `https://instagram.com/${instagramId.replace('@', '')}` : '';
-    const waGroupLink = currentStall.whatsappLink || '';
+    const hasInsta = currentStall.instagramId && currentStall.instagramId.trim() !== '' && currentStall.instagramId !== 'null';
+    const hasWA = currentStall.whatsappLink && currentStall.whatsappLink.trim() !== '' && currentStall.whatsappLink !== 'null';
+
+    const instaLink = hasInsta ? `https://instagram.com/${currentStall.instagramId.trim().replace('@', '')}` : '';
+    const waGroupLink = hasWA ? currentStall.whatsappLink.trim() : '';
 
     // Create the message
     let message = `Hello ${name}, thank you for visiting us at ${stallName}! 🌟\n\n`;
@@ -67,9 +69,11 @@ const VisitorRegistry = ({ showToast }) => {
 
   const triggerWhatsAppAgain = (visitor) => {
     const stallName = currentStall.stallName || 'our stall';
-    const instagramId = currentStall.instagramId ? `@${currentStall.instagramId.replace('@', '')}` : '';
-    const instaLink = instagramId ? `https://instagram.com/${instagramId.replace('@', '')}` : '';
-    const waGroupLink = currentStall.whatsappLink || '';
+    const hasInsta = currentStall.instagramId && currentStall.instagramId.trim() !== '' && currentStall.instagramId !== 'null';
+    const hasWA = currentStall.whatsappLink && currentStall.whatsappLink.trim() !== '' && currentStall.whatsappLink !== 'null';
+
+    const instaLink = hasInsta ? `https://instagram.com/${currentStall.instagramId.trim().replace('@', '')}` : '';
+    const waGroupLink = hasWA ? currentStall.whatsappLink.trim() : '';
 
     let message = `Hello ${visitor.name}, thank you for visiting us at ${stallName}! 🌟\n\n`;
     
