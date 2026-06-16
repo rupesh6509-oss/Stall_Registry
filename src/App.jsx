@@ -44,7 +44,7 @@ const AppContent = () => {
   if (!currentStall) {
     return (
       <div className="phone-wrapper">
-        <main className="main-content" style={{ padding: '0 0 20px 0', height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <main className="main-content" style={{ padding: '16px 16px 20px 16px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <Login showToast={showToast} />
           <Footer />
         </main>

@@ -39,19 +39,22 @@ const Login = ({ showToast }) => {
 
   return (
     <div className="auth-container">
-      <div className="auth-header">
-        <Store size={48} style={{ color: '#6366f1', marginBottom: '10px' }} />
-        <h1 className="auth-title">ExpoStall</h1>
-        <p className="auth-subtitle">Manage your stall visitors and invoices seamlessly</p>
+      <div className="auth-header" style={{ marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+          <Store size={28} style={{ color: '#4f46e5' }} />
+          <h1 className="auth-title" style={{ fontSize: '1.6rem', margin: 0 }}>ExpoStall</h1>
+        </div>
+        <p className="auth-subtitle" style={{ fontSize: '0.85rem' }}>Manage your stall registry and invoices</p>
       </div>
 
-      <div className="card auth-card">
+      <div className="card auth-card" style={{ padding: '16px' }}>
         <img 
           src="/exhibition_stall.png" 
           alt="Exhibition Stall Photo" 
           className="auth-stall-photo" 
+          style={{ height: '90px', marginBottom: '12px' }}
         />
-        <h2 style={{ marginBottom: '20px', textAlign: 'left', fontWeight: '600' }}>
+        <h2 style={{ fontSize: '1.1rem', marginBottom: '12px', textAlign: 'left', fontWeight: '600' }}>
           {isLogin ? 'Login to Stall' : 'Register New Stall'}
         </h2>
         
