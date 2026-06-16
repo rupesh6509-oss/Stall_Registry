@@ -208,11 +208,18 @@ export const StallProvider = ({ children }) => {
           .from('stalls')
           .select('*')
           .eq('id', data.user.id)
-          .single();
+          .maybeSingle();
 
         if (profileErr) throw profileErr;
-        setCurrentStall(mapStallData(profile));
-        return { success: true };
+        
+        if (profile) {
+          setCurrentStall(mapStallData(profile));
+          return { success: true };
+        } else {
+          // If profile is missing, sign out auth session
+          await supabase.auth.signOut();
+          return { success: false, message: 'Stall profile not found. Please register again.' };
+        }
       }
       return { success: false, message: 'Invalid credentials' };
     } catch (err) {
