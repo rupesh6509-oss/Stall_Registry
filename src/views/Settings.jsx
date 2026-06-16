@@ -31,6 +31,7 @@ const SettingsView = ({ showToast }) => {
   const [contactName, setContactName] = useState('');
   const [contactMobile, setContactMobile] = useState('');
   const [logo, setLogo] = useState('');
+  const [storeAddress, setStoreAddress] = useState('');
 
   // Sync state with context
   useEffect(() => {
@@ -41,6 +42,7 @@ const SettingsView = ({ showToast }) => {
       setContactName(currentStall.contactName || '');
       setContactMobile(currentStall.contactMobile || '');
       setLogo(currentStall.logo || '');
+      setStoreAddress(currentStall.storeAddress || '');
     }
   }, [currentStall]);
 
@@ -79,7 +81,8 @@ const SettingsView = ({ showToast }) => {
       whatsappLink,
       contactName,
       contactMobile,
-      logo
+      logo,
+      storeAddress
     });
 
     if (updated.success) {
@@ -97,6 +100,7 @@ const SettingsView = ({ showToast }) => {
       setContactName('Devendra Jain');
       setContactMobile('+919876543210');
       setLogo('');
+      setStoreAddress('G2, Tapasya Apartment, Bhayandar West, Near Madhu Maternity Hospital, 401101');
       
       await updateSettings({
         stallName: 'Jain Creations',
@@ -104,7 +108,8 @@ const SettingsView = ({ showToast }) => {
         whatsappLink: 'https://chat.whatsapp.com/demo_group_link',
         contactName: 'Devendra Jain',
         contactMobile: '+919876543210',
-        logo: ''
+        logo: '',
+        storeAddress: 'G2, Tapasya Apartment, Bhayandar West, Near Madhu Maternity Hospital, 401101'
       });
       showToast('Settings reset to Demo!', 'success');
     }
@@ -193,6 +198,18 @@ const SettingsView = ({ showToast }) => {
               placeholder="e.g. https://chat.whatsapp.com/..."
               value={whatsappLink}
               onChange={(e) => setWhatsappLink(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="addressInput">Physical Store Address</label>
+            <textarea
+              id="addressInput"
+              className="form-textarea"
+              rows="3"
+              placeholder="e.g. G2, Tapasya Apartment, Bhayandar West..."
+              value={storeAddress}
+              onChange={(e) => setStoreAddress(e.target.value)}
             />
           </div>
 

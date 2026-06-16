@@ -18,6 +18,35 @@ const VisitorRegistry = ({ showToast }) => {
     return cleaned;
   };
 
+  const generateWhatsAppGreeting = (visitorName, stall) => {
+    const stallName = stall.stallName || 'our stall';
+    const hasInsta = stall.instagramId && stall.instagramId.trim() !== '' && stall.instagramId !== 'null';
+    const hasWA = stall.whatsappLink && stall.whatsappLink.trim() !== '' && stall.whatsappLink !== 'null';
+    const hasAddress = stall.storeAddress && stall.storeAddress.trim() !== '' && stall.storeAddress !== 'null';
+
+    const instaLink = hasInsta ? `https://instagram.com/${stall.instagramId.trim().replace('@', '')}` : '';
+    const waGroupLink = hasWA ? stall.whatsappLink.trim() : '';
+    const storeAddress = hasAddress ? stall.storeAddress.trim() : '';
+
+    let message = `Hello ${visitorName},\n\n`;
+    message += `Thank you for visiting ${stallName} at our exhibition stall! We are delighted to connect with you.\n\n`;
+    
+    if (waGroupLink) {
+      message += `Please join our WhatsApp Group to explore our latest collection of premium sarees, exclusive designs, and upcoming arrivals:\n👉 ${waGroupLink}\n\n`;
+    }
+    
+    if (instaLink) {
+      message += `Please follow us on Instagram to explore our latest designs:\n👉 ${instaLink}\n\n`;
+    }
+    
+    if (storeAddress) {
+      message += `📍 Visit our physical store:\n${storeAddress}\n\n`;
+    }
+    
+    message += `Looking forward to styling you soon!\n${stallName}`;
+    return message;
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!name.trim() || !mobile.trim()) {
@@ -35,25 +64,7 @@ const VisitorRegistry = ({ showToast }) => {
     showToast('Visitor registered successfully!', 'success');
 
     // WhatsApp Integration
-    const stallName = currentStall.stallName || 'our stall';
-    const hasInsta = currentStall.instagramId && currentStall.instagramId.trim() !== '' && currentStall.instagramId !== 'null';
-    const hasWA = currentStall.whatsappLink && currentStall.whatsappLink.trim() !== '' && currentStall.whatsappLink !== 'null';
-
-    const instaLink = hasInsta ? `https://instagram.com/${currentStall.instagramId.trim().replace('@', '')}` : '';
-    const waGroupLink = hasWA ? currentStall.whatsappLink.trim() : '';
-
-    // Create the message
-    let message = `Hello ${name}, thank you for visiting us at ${stallName}! 🌟\n\n`;
-    
-    if (instaLink) {
-      message += `Follow us on Instagram for latest collections:\n${instaLink}\n\n`;
-    }
-    
-    if (waGroupLink) {
-      message += `Join our WhatsApp Group for regular updates:\n${waGroupLink}\n\n`;
-    }
-    
-    message += `Have a wonderful day!`;
+    const message = generateWhatsAppGreeting(name, currentStall);
 
     // Format mobile
     const formattedMobile = formatMobileForWhatsApp(mobile);
@@ -68,25 +79,7 @@ const VisitorRegistry = ({ showToast }) => {
   };
 
   const triggerWhatsAppAgain = (visitor) => {
-    const stallName = currentStall.stallName || 'our stall';
-    const hasInsta = currentStall.instagramId && currentStall.instagramId.trim() !== '' && currentStall.instagramId !== 'null';
-    const hasWA = currentStall.whatsappLink && currentStall.whatsappLink.trim() !== '' && currentStall.whatsappLink !== 'null';
-
-    const instaLink = hasInsta ? `https://instagram.com/${currentStall.instagramId.trim().replace('@', '')}` : '';
-    const waGroupLink = hasWA ? currentStall.whatsappLink.trim() : '';
-
-    let message = `Hello ${visitor.name}, thank you for visiting us at ${stallName}! 🌟\n\n`;
-    
-    if (instaLink) {
-      message += `Follow us on Instagram for latest collections:\n${instaLink}\n\n`;
-    }
-    
-    if (waGroupLink) {
-      message += `Join our WhatsApp Group for regular updates:\n${waGroupLink}\n\n`;
-    }
-    
-    message += `Have a wonderful day!`;
-
+    const message = generateWhatsAppGreeting(visitor.name, currentStall);
     const formattedMobile = formatMobileForWhatsApp(visitor.mobile);
     const whatsappUrl = `https://wa.me/${formattedMobile}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');

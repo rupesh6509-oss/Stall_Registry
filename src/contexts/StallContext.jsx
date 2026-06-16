@@ -14,7 +14,8 @@ const mapStallData = (dbStall) => {
     contactName: dbStall.contact_name,
     contactMobile: dbStall.contact_mobile,
     logo: dbStall.logo,
-    role: dbStall.role || 'stall'
+    role: dbStall.role || 'stall',
+    storeAddress: dbStall.store_address
   };
 };
 
@@ -294,7 +295,8 @@ export const StallProvider = ({ children }) => {
         whatsapp_link: settingsData.whatsappLink,
         contact_name: settingsData.contactName,
         contact_mobile: settingsData.contactMobile,
-        logo: settingsData.logo
+        logo: settingsData.logo,
+        store_address: settingsData.storeAddress
       };
 
       const { data, error } = await supabase
