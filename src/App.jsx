@@ -12,6 +12,7 @@ import InvoiceCreator from './views/InvoiceCreator';
 import InvoiceHistory from './views/InvoiceHistory';
 import ProductList from './views/ProductList';
 import SettingsView from './views/Settings';
+import AdminDashboard from './views/AdminDashboard';
 
 const AppContent = () => {
   const { currentStall } = useContext(StallContext);
@@ -39,6 +40,7 @@ const AppContent = () => {
     }
   };
 
+  // 1. Unauthenticated State
   if (!currentStall) {
     return (
       <div className="phone-wrapper">
@@ -56,6 +58,31 @@ const AppContent = () => {
     );
   }
 
+  // 2. Admin Authenticated State
+  if (currentStall.role === 'admin') {
+    return (
+      <div className="phone-wrapper">
+        <Header />
+        
+        <main className="main-content">
+          <AdminDashboard showToast={showToast} />
+          <Footer />
+        </main>
+
+        {toast && (
+          <div className="toast-container">
+            <Toast 
+              message={toast.message} 
+              type={toast.type} 
+              onClose={() => setToast(null)} 
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // 3. Standard Stall Authenticated State
   return (
     <div className="phone-wrapper">
       <Header />
