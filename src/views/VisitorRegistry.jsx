@@ -18,7 +18,7 @@ const VisitorRegistry = ({ showToast }) => {
     return cleaned;
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     if (!name.trim() || !mobile.trim()) {
       showToast('Please enter customer name and mobile number', 'error');
@@ -31,7 +31,7 @@ const VisitorRegistry = ({ showToast }) => {
     }
 
     // Save to local storage
-    addVisitor({ name, mobile });
+    await addVisitor({ name, mobile });
     showToast('Visitor registered successfully!', 'success');
 
     // WhatsApp Integration

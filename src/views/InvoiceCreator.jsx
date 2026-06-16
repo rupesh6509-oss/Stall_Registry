@@ -68,7 +68,7 @@ const InvoiceCreator = ({ showToast }) => {
     return items.reduce((sum, item) => sum + (item.rate * item.qty), 0);
   };
 
-  const handleGenerateInvoice = (e) => {
+  const handleGenerateInvoice = async (e) => {
     e.preventDefault();
 
     // Validations
@@ -91,7 +91,7 @@ const InvoiceCreator = ({ showToast }) => {
     const total = calculateSubtotal();
     
     // Save invoice
-    const newInvoice = addInvoice({
+    const newInvoice = await addInvoice({
       customerMobile,
       items,
       total

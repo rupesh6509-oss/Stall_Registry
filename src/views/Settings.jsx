@@ -66,14 +66,14 @@ const SettingsView = ({ showToast }) => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     if (!stallName.trim()) {
       showToast('Stall Name is required', 'error');
       return;
     }
 
-    const updated = updateSettings({
+    const updated = await updateSettings({
       stallName,
       instagramId,
       whatsappLink,
@@ -89,7 +89,7 @@ const SettingsView = ({ showToast }) => {
     }
   };
 
-  const handleResetDemo = () => {
+  const handleResetDemo = async () => {
     if (window.confirm('Reset to Devendra\'s Demo Settings?')) {
       setStallName('Jain Creations');
       setInstagramId('jain_creations_official');
@@ -98,7 +98,7 @@ const SettingsView = ({ showToast }) => {
       setContactMobile('+919876543210');
       setLogo('');
       
-      updateSettings({
+      await updateSettings({
         stallName: 'Jain Creations',
         instagramId: 'jain_creations_official',
         whatsappLink: 'https://chat.whatsapp.com/demo_group_link',

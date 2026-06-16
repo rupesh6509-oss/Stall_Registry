@@ -9,7 +9,7 @@ const Login = ({ showToast }) => {
   const [password, setPassword] = useState('');
   const [stallName, setStallName] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!username || !password) {
       showToast('Please fill all fields', 'error');
@@ -17,7 +17,7 @@ const Login = ({ showToast }) => {
     }
 
     if (isLogin) {
-      const result = login(username, password);
+      const result = await login(username, password);
       if (result.success) {
         showToast('Logged in successfully!', 'success');
       } else {
@@ -28,7 +28,7 @@ const Login = ({ showToast }) => {
         showToast('Please provide a stall name', 'error');
         return;
       }
-      const result = registerStall(username, password, stallName);
+      const result = await registerStall(username, password, stallName);
       if (result.success) {
         showToast('Stall registered and logged in!', 'success');
       } else {

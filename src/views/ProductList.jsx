@@ -26,7 +26,7 @@ const ProductList = ({ showToast }) => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim() || rate === '') {
       showToast('Please enter name and rate', 'error');
@@ -42,19 +42,19 @@ const ProductList = ({ showToast }) => {
     }
 
     if (editingId) {
-      updateProduct(editingId, { name, rate: rateNum, qty: qtyNum });
+      await updateProduct(editingId, { name, rate: rateNum, qty: qtyNum });
       showToast('Product updated!', 'success');
     } else {
-      addProduct({ name, rate: rateNum, qty: qtyNum });
+      await addProduct({ name, rate: rateNum, qty: qtyNum });
       showToast('Product added!', 'success');
     }
 
     setIsModalOpen(false);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      deleteProduct(id);
+      await deleteProduct(id);
       showToast('Product deleted!', 'success');
     }
   };
