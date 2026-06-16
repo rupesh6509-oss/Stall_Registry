@@ -193,7 +193,8 @@ export const StallProvider = ({ children }) => {
 
   // Auth Operations
   const login = async (username, password) => {
-    const email = `${username.trim().toLowerCase()}@stall.com`;
+    const cleanUsername = username.trim().toLowerCase();
+    const email = cleanUsername.includes('@') ? cleanUsername : `${cleanUsername}@stall.com`;
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -222,7 +223,7 @@ export const StallProvider = ({ children }) => {
 
   const registerStall = async (username, password, stallName) => {
     const cleanUsername = username.trim().toLowerCase();
-    const email = `${cleanUsername}@stall.com`;
+    const email = cleanUsername.includes('@') ? cleanUsername : `${cleanUsername}@stall.com`;
     try {
       // 1. Sign up user in Supabase Auth
       const { data: authData, error: signUpErr } = await supabase.auth.signUp({
