@@ -46,6 +46,11 @@ const Login = ({ showToast }) => {
       </div>
 
       <div className="card auth-card">
+        <img 
+          src="/exhibition_stall.png" 
+          alt="Exhibition Stall Photo" 
+          className="auth-stall-photo" 
+        />
         <h2 style={{ marginBottom: '20px', textAlign: 'left', fontWeight: '600' }}>
           {isLogin ? 'Login to Stall' : 'Register New Stall'}
         </h2>

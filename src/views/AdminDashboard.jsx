@@ -291,8 +291,8 @@ const AdminDashboard = ({ showToast }) => {
                   return (
                     <div key={inv.id} className="visitor-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: '6px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                        <span style={{ fontWeight: 700, color: '#f8fafc' }}>{inv.invoice_number}</span>
-                        <span style={{ color: '#94a3b8' }}>{new Date(inv.date).toLocaleDateString()}</span>
+                        <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{inv.invoice_number}</span>
+                        <span style={{ color: 'var(--text-secondary)' }}>{new Date(inv.date).toLocaleDateString()}</span>
                       </div>
                       
                       <div style={{ fontSize: '0.75rem', color: '#64748b', display: 'flex', justifyContent: 'space-between' }}>

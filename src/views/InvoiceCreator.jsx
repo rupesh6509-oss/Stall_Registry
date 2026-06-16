@@ -156,13 +156,13 @@ const InvoiceCreator = ({ showToast }) => {
         <form onSubmit={handleGenerateInvoice}>
           {/* Customer Details */}
           <div className="invoice-customer-box">
-            <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>CUSTOMER NAME</div>
-            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f8fafc', marginBottom: '10px' }}>
+            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>CUSTOMER NAME</div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '10px' }}>
               Stall Customers
             </div>
             
             <div className="form-group" style={{ margin: 0 }}>
-              <label className="form-label" htmlFor="custMob" style={{ color: '#94a3b8' }}>Customer Mobile (For WhatsApp)</label>
+              <label className="form-label" htmlFor="custMob">Customer Mobile (For WhatsApp)</label>
               <input
                 type="tel"
                 id="custMob"
