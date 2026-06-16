@@ -1,115 +1,191 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 
 export const StallContext = createContext();
 
+// Mapper helper to translate PostgreSQL snake_case to JavaScript camelCase
+const mapStallData = (dbStall) => {
+  if (!dbStall) return null;
+  return {
+    id: dbStall.id,
+    username: dbStall.username,
+    password: dbStall.password,
+    stallName: dbStall.stall_name,
+    instagramId: dbStall.instagram_id,
+    whatsappLink: dbStall.whatsapp_link,
+    contactName: dbStall.contact_name,
+    contactMobile: dbStall.contact_mobile,
+    logo: dbStall.logo
+  };
+};
+
 export const StallProvider = ({ children }) => {
-  const [stalls, setStalls] = useState([]);
   const [currentStall, setCurrentStall] = useState(null);
   const [visitors, setVisitors] = useState([]);
   const [products, setProducts] = useState([]);
   const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Initialize and load stalls list from localStorage
+  // Check active session on mount
   useEffect(() => {
-    const savedStalls = localStorage.getItem('ex_stalls');
-    let stallsList = [];
-    if (savedStalls) {
-      stallsList = JSON.parse(savedStalls);
-    } else {
-      // Create a default demo stall for easy testing
-      stallsList = [
-        {
-          username: 'demo',
-          password: 'password',
-          stallName: 'Jain Creations',
-          instagramId: 'jain_creations_official',
-          whatsappLink: 'https://chat.whatsapp.com/demo_group_link',
-          contactName: 'Devendra Jain',
-          contactMobile: '+919876543210',
-          logo: '' // base64 logo string
-        }
-      ];
-      localStorage.setItem('ex_stalls', JSON.stringify(stallsList));
-    }
-    setStalls(stallsList);
+    const checkActiveSession = async () => {
+      const activeSession = localStorage.getItem('ex_active_session');
+      if (activeSession) {
+        try {
+          const { data, error } = await supabase
+            .from('stalls')
+            .select('*')
+            .eq('username', activeSession)
+            .maybeSingle();
 
-    // Auto-login demo or check active session
-    const activeSession = localStorage.getItem('ex_active_session');
-    if (activeSession) {
-      const activeStall = stallsList.find(s => s.username === activeSession);
-      if (activeStall) {
-        setCurrentStall(activeStall);
+          if (error) throw error;
+          if (data) {
+            setCurrentStall(mapStallData(data));
+          } else {
+            localStorage.removeItem('ex_active_session');
+          }
+        } catch (err) {
+          console.error('Error fetching active session from Supabase:', err.message);
+        }
       }
-    }
+    };
+    checkActiveSession();
   }, []);
 
-  // Load stall-specific data whenever currentStall changes
+  // Fetch stall-specific data in real-time when currentStall changes
   useEffect(() => {
-    if (currentStall) {
-      const username = currentStall.username;
-      
-      // Load visitors
-      const savedVisitors = localStorage.getItem(`ex_visitors_${username}`);
-      setVisitors(savedVisitors ? JSON.parse(savedVisitors) : []);
-
-      // Load products (if empty, add some demo products)
-      const savedProducts = localStorage.getItem(`ex_products_${username}`);
-      if (savedProducts) {
-        setProducts(JSON.parse(savedProducts));
-      } else {
-        const defaultProducts = [
-          { id: '1', name: 'Cotton Designer Kurti', rate: 799, qty: 1 },
-          { id: '2', name: 'Silk Palazzo Set', rate: 1499, qty: 1 },
-          { id: '3', name: 'Ethnic Embroidered Dupatta', rate: 350, qty: 1 },
-          { id: '4', name: 'Georgette Anarkali Gown', rate: 2499, qty: 1 }
-        ];
-        localStorage.setItem(`ex_products_${username}`, JSON.stringify(defaultProducts));
-        setProducts(defaultProducts);
-      }
-
-      // Load invoices
-      const savedInvoices = localStorage.getItem(`ex_invoices_${username}`);
-      setInvoices(savedInvoices ? JSON.parse(savedInvoices) : []);
-    } else {
+    if (!currentStall) {
       setVisitors([]);
       setProducts([]);
       setInvoices([]);
+      return;
     }
+
+    const fetchStallData = async () => {
+      setLoading(true);
+      const stallId = currentStall.id;
+
+      try {
+        // 1. Fetch visitors (order by date desc)
+        const { data: visitorsData, error: visitorsErr } = await supabase
+          .from('visitors')
+          .select('*')
+          .eq('stall_id', stallId)
+          .order('date', { ascending: false });
+
+        if (visitorsErr) throw visitorsErr;
+        setVisitors(visitorsData || []);
+
+        // 2. Fetch products
+        const { data: productsData, error: productsErr } = await supabase
+          .from('products')
+          .select('*')
+          .eq('stall_id', stallId);
+
+        if (productsErr) throw productsErr;
+        
+        // If product catalog is completely empty, insert demo products for them
+        if (!productsData || productsData.length === 0) {
+          const defaultProducts = [
+            { stall_id: stallId, name: 'Cotton Designer Kurti', rate: 799, qty: 1 },
+            { stall_id: stallId, name: 'Silk Palazzo Set', rate: 1499, qty: 1 },
+            { stall_id: stallId, name: 'Ethnic Embroidered Dupatta', rate: 350, qty: 1 }
+          ];
+          const { data: inserted, error: insertErr } = await supabase
+            .from('products')
+            .insert(defaultProducts)
+            .select();
+          if (!insertErr && inserted) {
+            setProducts(inserted);
+          }
+        } else {
+          setProducts(productsData);
+        }
+
+        // 3. Fetch invoices (order by date desc)
+        const { data: invoicesData, error: invoicesErr } = await supabase
+          .from('invoices')
+          .select('*')
+          .eq('stall_id', stallId)
+          .order('date', { ascending: false });
+
+        if (invoicesErr) throw invoicesErr;
+        setInvoices(invoicesData || []);
+
+      } catch (err) {
+        console.error('Error fetching data from Supabase:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStallData();
   }, [currentStall]);
 
   // Auth Operations
-  const login = (username, password) => {
-    const stall = stalls.find(s => s.username.toLowerCase() === username.toLowerCase() && s.password === password);
-    if (stall) {
-      setCurrentStall(stall);
-      localStorage.setItem('ex_active_session', stall.username);
-      return { success: true };
+  const login = async (username, password) => {
+    try {
+      const { data, error } = await supabase
+        .from('stalls')
+        .select('*')
+        .eq('username', username.trim().toLowerCase())
+        .eq('password', password)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setCurrentStall(mapStallData(data));
+        localStorage.setItem('ex_active_session', data.username);
+        return { success: true };
+      }
+      return { success: false, message: 'Invalid username or password' };
+    } catch (err) {
+      console.error('Login error:', err.message);
+      return { success: false, message: `Database error: ${err.message}` };
     }
-    return { success: false, message: 'Invalid username or password' };
   };
 
-  const registerStall = (username, password, stallName) => {
-    if (stalls.some(s => s.username.toLowerCase() === username.toLowerCase())) {
-      return { success: false, message: 'Username already exists' };
+  const registerStall = async (username, password, stallName) => {
+    const cleanUsername = username.trim().toLowerCase();
+    try {
+      // Check if username exists
+      const { data: existing, error: checkErr } = await supabase
+        .from('stalls')
+        .select('username')
+        .eq('username', cleanUsername)
+        .maybeSingle();
+
+      if (checkErr) throw checkErr;
+      if (existing) {
+        return { success: false, message: 'Username already exists' };
+      }
+
+      // Insert new stall
+      const { data: inserted, error: insertErr } = await supabase
+        .from('stalls')
+        .insert([{
+          username: cleanUsername,
+          password,
+          stall_name: stallName,
+          instagram_id: '',
+          whatsapp_link: '',
+          contact_name: '',
+          contact_mobile: '',
+          logo: ''
+        }])
+        .select()
+        .single();
+
+      if (insertErr) throw insertErr;
+
+      setCurrentStall(mapStallData(inserted));
+      localStorage.setItem('ex_active_session', inserted.username);
+      return { success: true };
+    } catch (err) {
+      console.error('Registration error:', err.message);
+      return { success: false, message: `Database error: ${err.message}` };
     }
-    const newStall = {
-      username,
-      password,
-      stallName,
-      instagramId: '',
-      whatsappLink: '',
-      contactName: '',
-      contactMobile: '',
-      logo: ''
-    };
-    const updatedStalls = [...stalls, newStall];
-    setStalls(updatedStalls);
-    localStorage.setItem('ex_stalls', JSON.stringify(updatedStalls));
-    
-    // Auto-login the newly created stall
-    setCurrentStall(newStall);
-    localStorage.setItem('ex_active_session', username);
-    return { success: true };
   };
 
   const logout = () => {
@@ -118,93 +194,152 @@ export const StallProvider = ({ children }) => {
   };
 
   // Settings Operations
-  const updateSettings = (settingsData) => {
+  const updateSettings = async (settingsData) => {
     if (!currentStall) return { success: false, message: 'No stall active' };
 
-    const updatedStalls = stalls.map(s => {
-      if (s.username === currentStall.username) {
-        return { ...s, ...settingsData };
-      }
-      return s;
-    });
+    try {
+      const dbPayload = {
+        stall_name: settingsData.stallName,
+        instagram_id: settingsData.instagramId,
+        whatsapp_link: settingsData.whatsappLink,
+        contact_name: settingsData.contactName,
+        contact_mobile: settingsData.contactMobile,
+        logo: settingsData.logo
+      };
 
-    setStalls(updatedStalls);
-    localStorage.setItem('ex_stalls', JSON.stringify(updatedStalls));
-    setCurrentStall(prev => ({ ...prev, ...settingsData }));
-    return { success: true };
+      const { data, error } = await supabase
+        .from('stalls')
+        .update(dbPayload)
+        .eq('id', currentStall.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setCurrentStall(mapStallData(data));
+      return { success: true };
+    } catch (err) {
+      console.error('Settings update error:', err.message);
+      return { success: false, message: `Database error: ${err.message}` };
+    }
   };
 
   // Visitor Operations
-  const addVisitor = (visitorData) => {
+  const addVisitor = async (visitorData) => {
     if (!currentStall) return;
-    const username = currentStall.username;
-    const newVisitor = {
-      id: Date.now().toString(),
-      date: new Date().toISOString(),
-      ...visitorData
-    };
-    const updatedVisitors = [newVisitor, ...visitors];
-    setVisitors(updatedVisitors);
-    localStorage.setItem(`ex_visitors_${username}`, JSON.stringify(updatedVisitors));
+    try {
+      const { data, error } = await supabase
+        .from('visitors')
+        .insert([{
+          stall_id: currentStall.id,
+          name: visitorData.name,
+          mobile: visitorData.mobile
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setVisitors(prev => [data, ...prev]);
+    } catch (err) {
+      console.error('Error adding visitor to Supabase:', err.message);
+    }
   };
 
   // Product Operations
-  const addProduct = (productData) => {
+  const addProduct = async (productData) => {
     if (!currentStall) return;
-    const username = currentStall.username;
-    const newProduct = {
-      id: Date.now().toString(),
-      ...productData
-    };
-    const updatedProducts = [...products, newProduct];
-    setProducts(updatedProducts);
-    localStorage.setItem(`ex_products_${username}`, JSON.stringify(updatedProducts));
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .insert([{
+          stall_id: currentStall.id,
+          name: productData.name,
+          rate: productData.rate,
+          qty: productData.qty
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setProducts(prev => [...prev, data]);
+    } catch (err) {
+      console.error('Error adding product to Supabase:', err.message);
+    }
   };
 
-  const updateProduct = (id, productData) => {
+  const updateProduct = async (id, productData) => {
     if (!currentStall) return;
-    const username = currentStall.username;
-    const updatedProducts = products.map(p => p.id === id ? { ...p, ...productData } : p);
-    setProducts(updatedProducts);
-    localStorage.setItem(`ex_products_${username}`, JSON.stringify(updatedProducts));
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .update({
+          name: productData.name,
+          rate: productData.rate,
+          qty: productData.qty
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setProducts(prev => prev.map(p => p.id === id ? data : p));
+    } catch (err) {
+      console.error('Error updating product in Supabase:', err.message);
+    }
   };
 
-  const deleteProduct = (id) => {
+  const deleteProduct = async (id) => {
     if (!currentStall) return;
-    const username = currentStall.username;
-    const updatedProducts = products.filter(p => p.id !== id);
-    setProducts(updatedProducts);
-    localStorage.setItem(`ex_products_${username}`, JSON.stringify(updatedProducts));
+    try {
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      setProducts(prev => prev.filter(p => p.id !== id));
+    } catch (err) {
+      console.error('Error deleting product from Supabase:', err.message);
+    }
   };
 
   // Invoice Operations
-  const addInvoice = (invoiceData) => {
-    if (!currentStall) return;
-    const username = currentStall.username;
+  const addInvoice = async (invoiceData) => {
+    if (!currentStall) return null;
     
-    // Generate simple incremental Invoice ID based on current history length
-    const invoiceNum = `INV-${new Date().getFullYear()}-${(invoices.length + 1).toString().padStart(4, '0')}`;
-    
-    const newInvoice = {
-      id: Date.now().toString(),
-      invoiceNumber: invoiceNum,
-      date: new Date().toISOString(),
-      customerName: 'Stall Customers', // Fixed name per requirements
-      ...invoiceData
-    };
-    const updatedInvoices = [newInvoice, ...invoices];
-    setInvoices(updatedInvoices);
-    localStorage.setItem(`ex_invoices_${username}`, JSON.stringify(updatedInvoices));
-    return newInvoice;
+    try {
+      const invoiceNum = `INV-${new Date().getFullYear()}-${(invoices.length + 1).toString().padStart(4, '0')}`;
+      
+      const { data, error } = await supabase
+        .from('invoices')
+        .insert([{
+          stall_id: currentStall.id,
+          invoice_number: invoiceNum,
+          customer_name: 'Stall Customers',
+          customer_mobile: invoiceData.customerMobile,
+          total: invoiceData.total,
+          items: invoiceData.items
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setInvoices(prev => [data, ...prev]);
+      return data;
+    } catch (err) {
+      console.error('Error adding invoice to Supabase:', err.message);
+      return null;
+    }
   };
 
   return (
     <StallContext.Provider value={{
-      stalls,
       currentStall,
       visitors,
       products,
       invoices,
+      loading,
       login,
       registerStall,
       logout,
