@@ -19,6 +19,17 @@ const mapStallData = (dbStall) => {
   };
 };
 
+const mapInvoiceData = (dbInvoice) => {
+  if (!dbInvoice) return null;
+  return {
+    ...dbInvoice,
+    stallId: dbInvoice.stall_id,
+    invoiceNumber: dbInvoice.invoice_number,
+    customerName: dbInvoice.customer_name,
+    customerMobile: dbInvoice.customer_mobile
+  };
+};
+
 export const StallProvider = ({ children }) => {
   const [currentStall, setCurrentStall] = useState(null);
   const [visitors, setVisitors] = useState([]);
@@ -133,7 +144,7 @@ export const StallProvider = ({ children }) => {
             .select('*')
             .order('date', { ascending: false });
           if (invoicesErr) throw invoicesErr;
-          setAllInvoices(invoicesData || []);
+          setAllInvoices(invoicesData ? invoicesData.map(mapInvoiceData) : []);
 
         } else {
           // STANDARD STALL: Fetch scoped data
@@ -180,7 +191,7 @@ export const StallProvider = ({ children }) => {
             .eq('stall_id', stallId)
             .order('date', { ascending: false });
           if (invoicesErr) throw invoicesErr;
-          setInvoices(invoicesData || []);
+          setInvoices(invoicesData ? invoicesData.map(mapInvoiceData) : []);
         }
       } catch (err) {
         console.error('Data loading error:', err.message);
@@ -448,8 +459,12 @@ export const StallProvider = ({ children }) => {
 
       if (error) throw error;
       
-      setInvoices(prev => [data, ...prev]);
-      return data;
+      const mappedInvoice = mapInvoiceData(data);
+      setInvoices(prev => [mappedInvoice, ...prev]);
+      if (currentStall.role === 'admin') {
+        setAllInvoices(prev => [mappedInvoice, ...prev]);
+      }
+      return mappedInvoice;
     } catch (err) {
       console.error('Error adding invoice:', err.message);
       return null;
