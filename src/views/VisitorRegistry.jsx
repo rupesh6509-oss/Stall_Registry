@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { StallContext } from '../contexts/StallContext';
-import { UserPlus, Send, Calendar, UserCheck } from 'lucide-react';
+import { UserPlus, Send, Calendar, UserCheck, Download } from 'lucide-react';
 
 const VisitorRegistry = ({ showToast }) => {
   const { currentStall, visitors, addVisitor } = useContext(StallContext);
@@ -85,6 +85,47 @@ const VisitorRegistry = ({ showToast }) => {
     window.open(whatsappUrl, '_blank');
   };
 
+  const downloadVisitorsCSV = () => {
+    if (visitors.length === 0) {
+      showToast('No visitors to export', 'error');
+      return;
+    }
+
+    // Define CSV headers
+    const headers = ['Serial No.', 'Name', 'Mobile Number', 'Date Registered'];
+    
+    // Format rows
+    const rows = visitors.map((v, index) => [
+      index + 1,
+      `"${v.name.replace(/"/g, '""')}"`, // escape quotes in name
+      `"${v.mobile}"`,
+      `"${new Date(v.date).toLocaleString()}"`
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create a Blob and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    // Set filename
+    const stallName = currentStall?.stallName ? currentStall.stallName.replace(/\s+/g, '_') : 'Stall';
+    const timestamp = new Date().toISOString().split('T')[0];
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${stallName}_Visitors_${timestamp}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    showToast('Visitors list exported successfully!', 'success');
+  };
+
   return (
     <div className="visitor-card">
       <div style={{ textAlign: 'left', marginBottom: '20px' }}>
@@ -129,10 +170,22 @@ const VisitorRegistry = ({ showToast }) => {
 
       {/* Recent Visitors List */}
       <div>
-        <h2 style={{ fontSize: '1.1rem', textAlign: 'left', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <UserCheck size={18} style={{ color: '#06b6d4' }} />
-          Recent Visitors ({visitors.length})
-        </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <h2 style={{ fontSize: '1.1rem', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+            <UserCheck size={18} style={{ color: '#06b6d4' }} />
+            Recent Visitors ({visitors.length})
+          </h2>
+          {visitors.length > 0 && (
+            <button 
+              className="btn btn-secondary" 
+              onClick={downloadVisitorsCSV}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.8rem', width: 'auto' }}
+            >
+              <Download size={14} />
+              Export CSV
+            </button>
+          )}
+        </div>
         {visitors.length === 0 ? (
           <div className="card empty-state">
             <UserPlus size={36} />
