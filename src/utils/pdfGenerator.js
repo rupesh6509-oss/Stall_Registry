@@ -1,4 +1,22 @@
 import { jsPDF } from 'jspdf';
+import notoSansRegular from '../assets/fonts/NotoSans-Regular.ttf?inline';
+import notoSansBold from '../assets/fonts/NotoSans-Bold.ttf?inline';
+import notoSansItalic from '../assets/fonts/NotoSans-Italic.ttf?inline';
+
+// jsPDF's built-in Helvetica has no ₹ glyph, so embed Noto Sans (subset to Latin + ₹)
+const FONT = 'NotoSans';
+const FONT_FILES = [
+  ['NotoSans-Regular.ttf', notoSansRegular, 'normal'],
+  ['NotoSans-Bold.ttf', notoSansBold, 'bold'],
+  ['NotoSans-Italic.ttf', notoSansItalic, 'italic']
+];
+
+const registerFonts = (doc) => {
+  FONT_FILES.forEach(([fileName, dataUrl, style]) => {
+    doc.addFileToVFS(fileName, dataUrl.split(',')[1]);
+    doc.addFont(fileName, FONT, style);
+  });
+};
 
 export const generateInvoicePDF = (invoice, currentStall, showToast) => {
   try {
@@ -7,6 +25,7 @@ export const generateInvoicePDF = (invoice, currentStall, showToast) => {
       unit: 'mm',
       format: 'a5' // A5 size receipt
     });
+    registerFonts(doc);
 
     const primaryColor = [99, 102, 241]; // Indigo
     const textColor = [30, 41, 59]; // Dark slate
@@ -35,13 +54,13 @@ export const generateInvoicePDF = (invoice, currentStall, showToast) => {
     }
 
     // 2. Draw Stall Name Header
-    doc.setFont('Helvetica', 'bold');
+    doc.setFont(FONT, 'bold');
     doc.setFontSize(15);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.text(currentStall.stallName || 'EXHIBITION STALL', textX, headerY, { align: textAlign });
 
     // 3. Draw Subtitles (if configured)
-    doc.setFont('Helvetica', 'normal');
+    doc.setFont(FONT, 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(71, 85, 105);
     
@@ -70,18 +89,18 @@ export const generateInvoicePDF = (invoice, currentStall, showToast) => {
 
     // 4. Draw Invoice Metadata
     doc.setTextColor(textColor[0], textColor[1], textColor[2]);
-    doc.setFont('Helvetica', 'bold');
+    doc.setFont(FONT, 'bold');
     doc.setFontSize(9.5);
     doc.text('INVOICE', 10, detailsY);
     
-    doc.setFont('Helvetica', 'normal');
+    doc.setFont(FONT, 'normal');
     doc.setFontSize(8);
     doc.text(`Invoice No: ${invoice.invoiceNumber}`, 10, detailsY + 4.5);
     doc.text(`Date: ${new Date(invoice.date).toLocaleDateString()}`, 10, detailsY + 8);
 
-    doc.setFont('Helvetica', 'bold');
+    doc.setFont(FONT, 'bold');
     doc.text('Bill To:', 90, detailsY);
-    doc.setFont('Helvetica', 'normal');
+    doc.setFont(FONT, 'normal');
     doc.text(invoice.customerName, 90, detailsY + 4.5);
     if (invoice.customerMobile) {
       doc.text(`Mobile: ${invoice.customerMobile}`, 90, detailsY + 8);
@@ -92,7 +111,7 @@ export const generateInvoicePDF = (invoice, currentStall, showToast) => {
     doc.setFillColor(241, 245, 249);
     doc.rect(10, y, 128, 6.5, 'F');
     
-    doc.setFont('Helvetica', 'bold');
+    doc.setFont(FONT, 'bold');
     doc.setFontSize(8);
     doc.setTextColor(71, 85, 105);
     doc.text('Item Description', 12, y + 4.5);
@@ -101,7 +120,7 @@ export const generateInvoicePDF = (invoice, currentStall, showToast) => {
     doc.text('Total', 136, y + 4.5, { align: 'right' });
 
     // 6. Draw Table Items
-    doc.setFont('Helvetica', 'normal');
+    doc.setFont(FONT, 'normal');
     doc.setTextColor(textColor[0], textColor[1], textColor[2]);
     y += 6.5;
     
@@ -123,17 +142,17 @@ export const generateInvoicePDF = (invoice, currentStall, showToast) => {
     doc.line(10, y, 138, y);
     y += 4.5;
     
-    doc.setFont('Helvetica', 'bold');
+    doc.setFont(FONT, 'bold');
     doc.text('Grand Total:', 90, y);
     doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
     doc.text(`₹${invoice.total.toFixed(2)}`, 136, y, { align: 'right' });
 
     // 8. Draw Footer Support
     y += 15;
-    doc.setFont('Helvetica', 'italic');
+    doc.setFont(FONT, 'italic');
     doc.setFontSize(7.5);
     doc.setTextColor(148, 163, 184);
-    doc.text('Thank you for shopping with us! 🌟', 74, y, { align: 'center' });
+    doc.text('Thank you for shopping with us!', 74, y, { align: 'center' });
     
     y += 3.5;
     doc.text('App Support: Devendra Jain (+91 84840 09350 / jdevendra6509@gmail.com)', 74, y, { align: 'center' });
