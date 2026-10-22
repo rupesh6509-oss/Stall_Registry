@@ -166,23 +166,7 @@ export const StallProvider = ({ children }) => {
             .eq('stall_id', stallId);
           if (productsErr) throw productsErr;
 
-          // Seed default catalog if empty
-          if (!productsData || productsData.length === 0) {
-            const defaultProducts = [
-              { stall_id: stallId, name: 'Cotton Designer Kurti', rate: 799, qty: 1 },
-              { stall_id: stallId, name: 'Silk Palazzo Set', rate: 1499, qty: 1 },
-              { stall_id: stallId, name: 'Ethnic Embroidered Dupatta', rate: 350, qty: 1 }
-            ];
-            const { data: inserted, error: insertErr } = await supabase
-              .from('products')
-              .insert(defaultProducts)
-              .select();
-            if (!insertErr && inserted) {
-              setProducts(inserted);
-            }
-          } else {
-            setProducts(productsData);
-          }
+          setProducts(productsData || []);
 
           // 3. Fetch invoices
           const { data: invoicesData, error: invoicesErr } = await supabase

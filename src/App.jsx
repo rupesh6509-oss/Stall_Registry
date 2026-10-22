@@ -28,7 +28,7 @@ const AppContent = () => {
       case 'registry':
         return <VisitorRegistry showToast={showToast} />;
       case 'invoice':
-        return <InvoiceCreator showToast={showToast} />;
+        return <InvoiceCreator showToast={showToast} onAddProducts={() => setActiveTab('products')} />;
       case 'history':
         return <InvoiceHistory showToast={showToast} />;
       case 'products':
