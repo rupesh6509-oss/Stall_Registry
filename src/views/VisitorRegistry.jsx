@@ -32,18 +32,18 @@ const VisitorRegistry = ({ showToast }) => {
     message += `Thank you for visiting ${stallName} at our exhibition stall! We are delighted to connect with you.\n\n`;
     
     if (waGroupLink) {
-      message += `Please join our WhatsApp Group to explore our latest collection of premium sarees, exclusive designs, and upcoming arrivals:\n👉 ${waGroupLink}\n\n`;
+      message += `Please join our WhatsApp Group to stay updated on our latest products, offers, and new arrivals:\n👉 ${waGroupLink}\n\n`;
     }
     
     if (instaLink) {
-      message += `Please follow us on Instagram to explore our latest designs:\n👉 ${instaLink}\n\n`;
+      message += `Please follow us on Instagram to see our latest updates:\n👉 ${instaLink}\n\n`;
     }
     
     if (storeAddress) {
       message += `📍 Visit our physical store:\n${storeAddress}\n\n`;
     }
     
-    message += `Looking forward to styling you soon!\n${stallName}`;
+    message += `Looking forward to seeing you again soon!\n${stallName}`;
     return message;
   };
 
