@@ -124,7 +124,7 @@ const ProductList = ({ showToast }) => {
                   type="text"
                   id="prodName"
                   className="form-input"
-                  placeholder="e.g. Designer Kurti - Pink"
+                  placeholder="e.g. Item name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required

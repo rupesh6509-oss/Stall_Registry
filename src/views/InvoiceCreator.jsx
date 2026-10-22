@@ -3,7 +3,7 @@ import { StallContext } from '../contexts/StallContext';
 import { generateInvoicePDF } from '../utils/pdfGenerator';
 import { Plus, Trash2, Send, FileText, CheckCircle, Search } from 'lucide-react';
 
-const InvoiceCreator = ({ showToast }) => {
+const InvoiceCreator = ({ showToast, onAddProducts }) => {
   const { currentStall, products, addInvoice } = useContext(StallContext);
   const [customerMobile, setCustomerMobile] = useState('');
   const [items, setItems] = useState([{ name: '', rate: 0, qty: 1 }]);
@@ -179,6 +179,15 @@ const InvoiceCreator = ({ showToast }) => {
           <div style={{ textAlign: 'left', marginBottom: '10px', fontSize: '0.9rem', fontWeight: 600, color: '#94a3b8' }}>
             INVOICE ITEMS
           </div>
+
+          {products.length === 0 && (
+            <div style={{ textAlign: 'left', marginBottom: '12px', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              No saved products yet. Type item details below, or{' '}
+              <button type="button" className="auth-switch-btn" onClick={onAddProducts}>
+                add products to your catalog
+              </button>
+            </div>
+          )}
 
           <div className="invoice-items-container">
             {items.map((item, index) => {
